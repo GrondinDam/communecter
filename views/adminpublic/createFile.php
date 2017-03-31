@@ -184,8 +184,9 @@ $userId = Yii::app()->session["userId"] ;
 		</table>
 		<div class="col-sm-12 col-xs-12">
 			<div class="col-sm-6 col-xs-12">
-
-				<a href="javascript:;" id="saveMapping" class="btn btn-primary pull-right"><?php echo Yii::t("common", "Save Mapping"); ?></a>
+				<a href="javascript:;" id="saveMapping" class="btn btn-success pull-right"><?php echo Yii::t("common", "Save Mapping"); ?></a>
+				<a href="javascript:;" id="updateMapping" class="btn btn-primary pull-right"><?php echo Yii::t("common", "Update Mapping"); ?></a>
+				<a href="javascript:;" id="deleteMapping" class="btn btn-danger pull-right"><?php echo Yii::t("common", "Delete Mapping"); ?></a>
 				<label for="inputKey">Key : </label>
 				<input class="" placeholder="Key a attribuer à l'ensemble des données importer" id="inputKey" name="inputKey" value="">
 			</div>
@@ -423,6 +424,130 @@ function bindCreateFile(){
 
 	$(".deleteLineMapping").off().on('click', function(){
   		$(this).parent().parent().remove();
+  	});
+
+  	$("#saveMapping").off().on('click', function() {
+
+  		var nbLigneMapping = $("#nbLigneMapping").val();
+		var inputKey = $("#inputKey").val().trim();
+		var infoCreateData = [] ;
+
+  		if(nbLigneMapping == 0){
+			toastr.error("Vous devez faire au moins une assignation de données");
+			$.unblockUI();
+  			return false ;
+		}
+		else{
+			for (i = 0; i <= nbLigneMapping; i++){
+	  			if($('#lineMapping'+i).length){
+	  				var valuesCreateData = {};
+					valuesCreateData['valueAttributeElt'] = $("#valueAttributeElt"+i).text();
+					valuesCreateData['idHeadCSV'] = $("#idHeadCSV"+i).val();
+					infoCreateData.push(valuesCreateData);
+	  			}	
+	  		}
+	  	}
+
+	  	var typeAction = "save";
+	  	mapping = getJsonMapping(infoCreateData, typeElement, typeAction);
+
+	  	var param = { 
+			mapping : mapping,
+		};
+  		
+  		$.ajax({
+	        type: 'POST',
+	        data: param,
+	        url: baseUrl+'/communecter/mapping/save/',
+	        dataType : 'json',
+	        async : false,
+	        success: function(data)
+        	{
+	        	if(data.result){
+	        		mylog.log("Mapping Saved");
+	        	}
+	        	else{
+	        		toastr.error("Impossible de sauvegarder le mapping");
+	        	}
+       		} 
+    	});
+  		
+  	});
+
+  	$("#updateMapping").off().on('click', function() {
+
+  		var nbLigneMapping = $("#nbLigneMapping").val();
+		var inputKey = $("#inputKey").val().trim();
+		var infoCreateData = [] ;
+
+  		if(nbLigneMapping == 0){
+			toastr.error("Vous devez faire au moins une assignation de données");
+			$.unblockUI();
+  			return false ;
+		}
+		else{
+			for (i = 0; i <= nbLigneMapping; i++){
+	  			if($('#lineMapping'+i).length){
+	  				var valuesCreateData = {};
+					valuesCreateData['valueAttributeElt'] = $("#valueAttributeElt"+i).text();
+					//mylog.log(typeof $("#idHeadCSV"+i).val());
+					valuesCreateData['idHeadCSV'] = $("#idHeadCSV"+i).val();
+					infoCreateData.push(valuesCreateData);
+	  			}	
+	  		}
+	  	}
+
+	  	var typeUpdate = "update";
+	  	mapping = getJsonMapping(infoCreateData, typeElement, typeUpdate);
+
+  		var param = {
+  			mapping : mapping,
+			typeElement : typeElement,
+			idMapping : $("#chooseMapping").val()
+		};
+  		$.ajax({
+	        type: 'POST',
+	        data: param,
+	        url: baseUrl+'/communecter/mapping/update/',
+	        dataType : 'json',
+	        async : false,
+	        success: function(data)
+        	{
+	        	if(data.result){
+	        		toastr.success("Le mapping à bien été modifié");
+	        	}
+	        	else{
+	        		toastr.error("Impossible de sauvegarder le mapping");
+	        	}
+       		} 
+    	});
+  	});
+
+  	$("#deleteMapping").off().on('click', function() {
+
+  		var param = {
+			typeElement : typeElement,
+			idMapping : $("#chooseMapping").val()
+		};
+
+  		$.ajax({
+	        type: 'POST',
+	        data: param,
+	        url: baseUrl+'/communecter/mapping/delete/',
+	        dataType : 'json',
+	        async : false,
+	        success: function(data)
+        	{
+	        	if(data.result){
+	        		toastr.success("Le mapping à bien été supprimé");
+
+	        	}
+	        	else{
+	        		toastr.error("Impossible de sauvegarder le mapping");
+	        	}
+       		} 
+    	});
+
   	});
 
   	$("#btnNextStep2").off().on('click', function(){
@@ -709,6 +834,14 @@ function displayStepTwo(){
 	$("#menu-step-mapping").show(400);
 	$("#menu-step-source").hide(400);
 	$("#menu-step-visualisation").hide(400);
+	$("#updateMapping").hide(400);
+	$("#deleteMapping").hide(400);
+	if ($("#chooseMapping").val() != "-1") {
+		$("#saveMapping").hide(400);
+		$("#updateMapping").show(400);
+		$("#deleteMapping").show(400);
+
+	}
 }
 
 
@@ -921,6 +1054,30 @@ function stepThree(params){
         	}
         }
     });
+}
+
+function getJsonMapping(infoCreateData, typeElement, SaveOrUpdate) {
+
+	if (SaveOrUpdate == "save") {
+		var mapping_name = prompt("Please enter the name of the mapping", "Mapping");
+	} else {
+		var mapping_name = "Already exist";
+	}
+	
+	var mapping = {};
+	mapping.fields = {};
+
+	if (mapping_name != "Already exist"){
+		mapping.name = mapping_name;
+	}
+
+	mapping.typeElement = typeElement;
+
+	$.each(infoCreateData, function(key, value){
+		mapping['fields'][value.idHeadCSV] = value.valueAttributeElt;
+	});
+
+	return mapping;
 }
 
 

@@ -451,6 +451,12 @@ class CommunecterController extends Controller
       "notifications"              => array("href" => "/ph/communecter/element/notifications"),
       "getnotifications"              => array("href" => "/ph/communecter/element/getnotifications"),
     ),
+    "mapping" => array(
+      "save"              => array('href' => "ph/communecter/mapping/save", "public" => true),
+      "update"            => array('href' => "ph/communecter/mapping/update", "public" => true),
+      "delete"            => array('href' => "ph/communecter/mapping/delete", "public" => true),
+
+    ),
     "co2" => array(
       "index"             => array('href' => "/ph/communecter/co2/index",             "public" => true),
       "web"               => array('href' => "/ph/communecter/co2/web",               "public" => true),
