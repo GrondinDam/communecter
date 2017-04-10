@@ -471,7 +471,7 @@ function bindCreateFile(){
 	        	}
        		} 
     	});
-  		
+  		$("#saveMapping").hide(400);
   	});
 
   	$("#updateMapping").off().on('click', function() {
@@ -840,7 +840,6 @@ function displayStepTwo(){
 		$("#saveMapping").hide(400);
 		$("#updateMapping").show(400);
 		$("#deleteMapping").show(400);
-
 	}
 }
 
